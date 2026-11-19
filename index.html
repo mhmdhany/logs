@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>محمد وندى</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Night garden: a deep plum night lit by rose and gold; one card that changes scene by scene. */
+        --night: #161229;
+        --plum: #241b3d;
+        --rose: #f0a3b5;
+        --gold: #e9c98f;
+        --ink: #f6eff4;
+        --mist: #b3a8c8;
+        --paper: #fbf3ec;
+        --paper-ink: #3b2534;
+        --display: "Aref Ruqaa", "Amiri", serif;
+        --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+        --letter: "Amiri", "Times New Roman", serif;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background:
+          radial-gradient(120% 80% at 50% 0%, #2b1e4a 0%, var(--night) 62%) fixed,
+          var(--night);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 17px;
+        line-height: 1.8;
+        overflow-x: hidden;
+      }
+      canvas#sky {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+      main {
+        position: relative;
+        z-index: 1;
+        min-height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 32px 16px;
+      }
+      .card {
+        width: min(460px, 100%);
+        background: color-mix(in srgb, var(--plum) 88%, transparent);
+        border: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+        border-radius: 24px;
+        padding: 32px 24px;
+        box-shadow:
+          0 30px 80px -30px rgba(0, 0, 0, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .scene {
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+      .scene.active {
+        display: flex;
+        animation: rise 0.6s ease both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .names {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: clamp(42px, 12vw, 58px);
+        line-height: 1.35;
+        color: var(--gold);
+        margin: 0;
+      }
+      .names .amp {
+        color: var(--rose);
+        font-size: 0.62em;
+        padding: 0 0.12em;
+      }
+      h2 {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: clamp(28px, 7.5vw, 36px);
+        line-height: 1.45;
+        margin: 0;
+        text-wrap: balance;
+      }
+      p {
+        margin: 0;
+        color: var(--mist);
+      }
+      .lead {
+        color: var(--ink);
+      }
+      .chip {
+        align-self: center;
+        font-size: 14px;
+        color: var(--gold);
+        border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+        border-radius: 999px;
+        padding: 2px 14px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      label {
+        font-size: 15px;
+        color: var(--mist);
+      }
+      #code {
+        width: 100%;
+        font: inherit;
+        font-size: 22px;
+        text-align: center;
+        letter-spacing: 0.06em;
+        color: var(--ink);
+        background: var(--night);
+        border: 1px solid color-mix(in srgb, var(--mist) 35%, transparent);
+        border-radius: 14px;
+        padding: 12px 14px;
+        direction: ltr;
+      }
+      #code::placeholder {
+        color: color-mix(in srgb, var(--mist) 60%, transparent);
+        letter-spacing: 0;
+      }
+      #code:focus {
+        outline: 2px solid var(--rose);
+        outline-offset: 2px;
+        border-color: transparent;
+      }
+
+      .btn {
+        font: inherit;
+        font-weight: 600;
+        font-size: 17px;
+        color: #2a1426;
+        background: linear-gradient(180deg, #f7bccb, var(--rose));
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 20px;
+        cursor: pointer;
+        box-shadow: 0 10px 24px -10px rgba(240, 163, 181, 0.6);
+        transition: transform 0.15s;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--mist);
+        box-shadow: none;
+        border: 1px solid color-mix(in srgb, var(--mist) 30%, transparent);
+        font-weight: 500;
+        font-size: 15px;
+      }
+      .btn:focus-visible,
+      .opt:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 3px;
+      }
+      .btn[hidden] {
+        display: none;
+      }
+      .msg {
+        min-height: 1.8em;
+        font-size: 15px;
+        color: var(--rose);
+      }
+      .shake {
+        animation: shake 0.4s;
+      }
+      @keyframes shake {
+        20%,
+        60% {
+          transform: translateX(-8px);
+        }
+        40%,
+        80% {
+          transform: translateX(8px);
+        }
+      }
+
+      .counter {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .tile {
+        background: var(--night);
+        border-radius: 14px;
+        padding: 12px 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        border: 1px solid color-mix(in srgb, var(--gold) 14%, transparent);
+      }
+      .tile b {
+        font-size: clamp(22px, 6.5vw, 30px);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.25;
+      }
+      .tile span {
+        font-size: 13px;
+        color: var(--mist);
+      }
+
+      .hearts {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+      }
+      .hearts svg {
+        width: 22px;
+        height: 22px;
+        transition: transform 0.3s;
+      }
+      .hearts path {
+        fill: transparent;
+        stroke: var(--mist);
+        stroke-width: 1.6;
+        transition:
+          fill 0.3s,
+          stroke 0.3s;
+      }
+      .hearts svg.on {
+        transform: scale(1.15);
+      }
+      .hearts svg.on path {
+        fill: var(--rose);
+        stroke: var(--rose);
+      }
+      .q-count {
+        font-size: 14px;
+        color: var(--gold);
+      }
+      .q-title {
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.6;
+        margin: 0;
+        text-wrap: balance;
+      }
+      .options {
+        display: grid;
+        gap: 10px;
+      }
+      .opt {
+        font: inherit;
+        font-size: 17px;
+        text-align: right;
+        color: var(--ink);
+        background: var(--night);
+        border: 1px solid color-mix(in srgb, var(--mist) 25%, transparent);
+        border-radius: 14px;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s,
+          opacity 0.2s;
+      }
+      .opt:hover:not(:disabled) {
+        border-color: var(--rose);
+      }
+      .opt:disabled {
+        cursor: default;
+      }
+      .opt.right {
+        background: color-mix(in srgb, var(--rose) 22%, var(--night));
+        border-color: var(--rose);
+      }
+      .opt.wrong {
+        opacity: 0.4;
+      }
+      .feedback {
+        min-height: 1.8em;
+        color: var(--gold);
+        font-size: 15px;
+      }
+
+      .envelope {
+        position: relative;
+        width: 220px;
+        height: 142px;
+        margin: 6px auto 4px;
+        background: #f3e3d6;
+        border-radius: 8px;
+        box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+        animation: float 3.2s ease-in-out infinite;
+      }
+      .envelope::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #efdccd;
+        clip-path: polygon(0 100%, 50% 46%, 100% 100%);
+        border-radius: 8px;
+      }
+      .envelope::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #e6cdbb;
+        clip-path: polygon(0 0, 100% 0, 50% 60%);
+        border-radius: 8px 8px 0 0;
+      }
+      .seal {
+        position: absolute;
+        left: 50%;
+        top: 60%;
+        transform: translate(-50%, -50%);
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #e57b94, #a63b58);
+        display: grid;
+        place-items: center;
+        z-index: 2;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+      .seal svg {
+        width: 20px;
+        height: 20px;
+      }
+      .seal path {
+        fill: #fbe3ea;
+      }
+      @keyframes float {
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+
+      .paper {
+        background: var(--paper);
+        color: var(--paper-ink);
+        border-radius: 8px;
+        padding: 28px 22px 24px;
+        text-align: right;
+        font-family: var(--letter);
+        font-size: 19px;
+        line-height: 2.05;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+        transform-origin: top center;
+        animation: unfold 0.9s ease both;
+      }
+      .paper p {
+        color: inherit;
+      }
+      .paper .greet {
+        font-weight: 700;
+        font-size: 21px;
+      }
+      .paper .sign {
+        font-family: var(--display);
+        font-size: 30px;
+        color: #9a4d64;
+        text-align: left;
+        margin-top: 4px;
+      }
+      @keyframes unfold {
+        from {
+          opacity: 0;
+          transform: perspective(800px) rotateX(-70deg);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .surprise {
+        color: var(--ink);
+        border: 1px dashed color-mix(in srgb, var(--rose) 60%, transparent);
+        border-radius: 14px;
+        padding: 12px 16px;
+        background: color-mix(in srgb, var(--rose) 10%, transparent);
+      }
+      .foot {
+        font-size: 13px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="sky" aria-hidden="true"></canvas>
+    <main>
+      <div class="card" id="card">
+        <!-- 1. Lock -->
+        <section class="scene active" id="s-lock" aria-labelledby="t-lock">
+          <h1 class="names" id="t-lock"><span id="him">محمد</span> <span class="amp">و</span> <span id="her">ندى</span></h1>
+          <p class="lead">هذه الصفحة صُنعت لكِ وحدكِ</p>
+          <form class="field" id="lock-form" autocomplete="off">
+            <label for="code">اكتبي تاريخ خطوبتنا لتفتحيها</label>
+            <input id="code" name="code" type="text" inputmode="text" placeholder="يوم / شهر" />
+            <button class="btn" type="submit">افتحي</button>
+          </form>
+          <p class="msg" id="lock-msg" role="status"></p>
+        </section>
+
+        <!-- 2. Counter -->
+        <section class="scene" id="s-count" aria-labelledby="t-count">
+          <span class="chip" id="date-chip"></span>
+          <h2 id="t-count"></h2>
+          <p>هذا ما مرّ من الوقت منذ أن قلتِ نعم</p>
+          <div class="counter" aria-live="off">
+            <div class="tile"><b id="c-d">٠</b><span>يوم</span></div>
+            <div class="tile"><b id="c-h">٠</b><span>ساعة</span></div>
+            <div class="tile"><b id="c-m">٠</b><span>دقيقة</span></div>
+            <div class="tile"><b id="c-s">٠</b><span>ثانية</span></div>
+          </div>
+          <p class="lead">جاهزة لأسئلة صغيرة؟ أجيبي إجابات صحيحة لتصلي إلى رسالتي.</p>
+          <button class="btn" type="button" id="start-quiz">ابدئي</button>
+        </section>
+
+        <!-- 3. Quiz -->
+        <section class="scene" id="s-quiz" aria-labelledby="q-title">
+          <div class="hearts" id="hearts" aria-hidden="true"></div>
+          <span class="q-count" id="q-count"></span>
+          <p class="q-title lead" id="q-title"></p>
+          <div class="options" id="q-options"></div>
+          <p class="feedback" id="q-feedback" role="status"></p>
+          <button class="btn" type="button" id="q-next" hidden>التالي</button>
+        </section>
+
+        <!-- 4. Letter -->
+        <section class="scene" id="s-letter" aria-labelledby="t-letter">
+          <h2 id="t-letter">رسالة لكِ</h2>
+          <div id="sealed">
+            <div class="envelope" aria-hidden="true">
+              <div class="seal">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.3C19.5 16.4 12 21 12 21z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <button class="btn" type="button" id="open-letter">افتحي الرسالة</button>
+          <article class="paper" id="paper" hidden></article>
+          <p class="surprise" id="surprise" hidden></p>
+          <button class="btn ghost" type="button" id="restart" hidden>ابدئي من جديد</button>
+          <p class="foot" id="foot" hidden>صُنعت بالحب وبعض أسطر الكود</p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      /* ============================================================
+   عدّل هنا: كل النصوص في مكان واحد
+   ============================================================ */
+      const CONFIG = {
+        him: "محمد",
+        her: "ندى",
+        engaged: [2026, 8, 27], // سنة، شهر، يوم
+
+        // كل سؤال: options + answer (رقم الإجابة الصحيحة بدءاً من 0) + yes (رسالة الإجابة الصحيحة) + no (اختياري)
+        // السؤال الأول يُحسب تلقائياً من تاريخ الخطوبة
+        questions: [
+          { q: "كم يوماً مرّ على خطوبتنا حتى اليوم؟", auto: "days" },
+          { q: "من الذي يحب الآخر أكثر؟", options: ["ندى", "محمد"], answer: 1, yes: "طبعاً محمد، وهذه لا تحتاج إلى نقاش", no: "إجابة لطيفة، لكن محمد يعترض. حاولي مرة أخرى" },
+          { q: "ما أجمل شيء في ندى بالنسبة لمحمد؟", options: ["ضحكتها", "قلبها الطيب", "عيناها", "كل ما سبق"], answer: 3, yes: "إجابة كاملة، تماماً مثلكِ" },
+          { q: "ماذا ينتظركِ بعد هذا السؤال؟", options: ["لا شيء", "رسالة عادية", "رسالة من القلب"], answer: 2, yes: "صحيح، رسالتكِ جاهزة" },
+        ],
+
+        letterGreeting: "صباح الخير يا ست ندى ♥️",
+        letter: [
+          "حبيت ادلعك عشان قدام متقوليش مكانش بيدلعني، انا مهشتكك اخر هشتكة 😂",
+          "وحشتيني، ووحشني خروجاتنا، ووحشني اسمع سي محمد 😂",
+          "كل حاجه ليها طعم منك والله 💘",
+          "اتمنى تكوني مبسوطة معانا، ولو مش مبسوطة هتتبسطي قدام عادي، احترمي نفسك 👊🏻",
+          "يلا كفاية كده، ان شاء الله يومك يبقى قمر شبهك كده 😍",
+        ],
+        signature: "محمد",
+        surprise: "", // اكتب هنا سطر مفاجأة لو حبيت، ولو فاضي مش هيظهر
+      };
+      /* ============================================================ */
+
+      /* ============================================================
+   LOGGING → Google Sheet
+   Paste your Apps Script web-app URL (ends with /exec) below.
+   Empty = logging off.
+   ============================================================ */
+      const LOG_URL = "https://script.google.com/macros/s/AKfycbxwpD_-F536xmZ_5cCTtiuVpm5Wtfjx7V52IyZA3E9Q7200DG1skytsNfGp7_oIf6K7/exec";
+
+      const visit = Math.random().toString(36).slice(2, 8).toUpperCase();
+      const t0 = Date.now();
+      const deviceP = (async () => {
+        const ua = navigator.userAgent;
+        let os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac OS X/.test(ua) ? "Mac" : "Other";
+        const ios = ua.match(/OS (\d+)_(\d+)/);
+        if (ios && (os === "iPhone" || os === "iPad")) os += " iOS " + ios[1] + "." + ios[2];
+        let model = "";
+        const am = ua.match(/Android ([\d.]+);\s*([^;)]+)/);
+        if (am) {
+          os = "Android " + am[1];
+          const m = am[2].replace(/ Build.*/, "").trim();
+          if (m && m !== "K") model = m;
+        }
+        try {
+          // Chrome / Samsung Internet on Android give the real model here (UA string hides it)
+          if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+            const h = await navigator.userAgentData.getHighEntropyValues(["model", "platformVersion"]);
+            if (h.model) model = h.model;
+            if (h.platform === "Android" && h.platformVersion) os = "Android " + h.platformVersion.split(".")[0];
+          }
+        } catch (e) {}
+        let browser = /SamsungBrowser/.test(ua)
+          ? "Samsung Internet"
+          : /Instagram/.test(ua)
+            ? "Instagram"
+            : /FBAN|FBAV/.test(ua)
+              ? "Facebook"
+              : /WhatsApp/.test(ua)
+                ? "WhatsApp"
+                : /Snapchat/.test(ua)
+                  ? "Snapchat"
+                  : /EdgA?\//.test(ua)
+                    ? "Edge"
+                    : /CriOS|Chrome\//.test(ua)
+                      ? "Chrome"
+                      : /FxiOS|Firefox/.test(ua)
+                        ? "Firefox"
+                        : /Safari/.test(ua)
+                          ? "Safari"
+                          : "Other";
+        if (/; wv\)/.test(ua)) browser = "In-app browser";
+        let tz = "";
+        try {
+          tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        } catch (e) {}
+        return { device: model ? model + " · " + os : os, browser, screen: screen.width + "×" + screen.height, lang: navigator.language || "", tz, ua };
+      })();
+      async function log(event, detail = "", correct = null) {
+        if (!LOG_URL) return;
+        try {
+          const d = await deviceP;
+          const body = JSON.stringify(
+            Object.assign({ visit, event, detail, correct, seconds: Math.round((Date.now() - t0) / 1000), localTime: new Date().toLocaleString("en-GB") }, d),
+          );
+          fetch(LOG_URL, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body }).catch(() => {});
+        } catch (e) {}
+      }
+      log("فتحت الصفحة");
+      document.addEventListener("visibilitychange", () => {
+        log(document.visibilityState === "hidden" ? "خرجت من الصفحة" : "رجعت للصفحة");
+      });
+      /* ============================================================ */
+
+      const $ = (id) => document.getElementById(id);
+      const ar = (n) => Number(n).toLocaleString("ar-EG");
+      const [Y, M, D] = CONFIG.engaged;
+      const start = new Date(Y, M - 1, D);
+      const HEART = "M12 21s-7.5-4.6-9.6-9.2C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.3C19.5 16.4 12 21 12 21z";
+
+      $("him").textContent = CONFIG.him;
+      $("her").textContent = CONFIG.her;
+      document.title = CONFIG.him + " و" + CONFIG.her;
+
+      function show(id) {
+        document.querySelectorAll(".scene").forEach((s) => s.classList.toggle("active", s.id === id));
+        const focusable = $(id).querySelector("input, button:not([hidden])");
+        if (focusable && id !== "s-lock") focusable.focus({ preventScroll: true });
+      }
+
+      /* ---------- time ---------- */
+      function since() {
+        const s = Math.max(0, Math.floor((Date.now() - start.getTime()) / 1000));
+        return { days: Math.floor(s / 86400), hours: Math.floor((s % 86400) / 3600), mins: Math.floor((s % 3600) / 60), secs: s % 60 };
+      }
+      function monthsDone() {
+        const n = new Date();
+        let m = (n.getFullYear() - Y) * 12 + (n.getMonth() - (M - 1));
+        if (n.getDate() < D) m--;
+        return Math.max(0, m);
+      }
+      function monthsTitle(m) {
+        const w = { 3: "ثلاثة", 4: "أربعة", 5: "خمسة", 6: "ستة", 7: "سبعة", 8: "ثمانية", 9: "تسعة", 10: "عشرة" };
+        if (m === 0) return "أيامنا الأولى معاً";
+        if (m === 1) return "شهر على خطوبتنا";
+        if (m === 2) return "شهران على خطوبتنا";
+        if (w[m]) return w[m] + " أشهر على خطوبتنا";
+        return ar(m) + " شهراً على خطوبتنا";
+      }
+      $("date-chip").textContent = start.toLocaleDateString("ar-EG", { day: "numeric", month: "long", year: "numeric" });
+      $("t-count").textContent = monthsTitle(monthsDone());
+      let tick;
+      function updateCounter() {
+        const t = since();
+        $("c-d").textContent = ar(t.days);
+        $("c-h").textContent = ar(t.hours);
+        $("c-m").textContent = ar(t.mins);
+        $("c-s").textContent = ar(t.secs);
+      }
+
+      /* ---------- lock ---------- */
+      let tries = 0;
+      function latinDigits(s) {
+        return s.replace(/[٠-٩]/g, (c) => c.charCodeAt(0) - 1632).replace(/[۰-۹]/g, (c) => c.charCodeAt(0) - 1776);
+      }
+      function isRight(raw) {
+        const s = latinDigits(raw.trim());
+        const nums = (s.match(/\d+/g) || []).map(Number);
+        if (!nums.length) return false;
+        const [a, b, c] = nums;
+        const yearOk = c === undefined || c === Y || c === Y % 100;
+        if (a === D && b === M && yearOk) return true; // 27/8
+        if (a === M && b === D && yearOk) return true; // 8/27
+        if (a === Y && b === M && c === D) return true; // 2026-08-27
+        if (/(أغسطس|اغسطس|آب|aug)/i.test(s) && nums.includes(D)) return true; // 27 أغسطس
+        return false;
+      }
+      $("lock-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const val = $("code").value;
+        log("كتبت التاريخ", val, isRight(val));
+        if (isRight(val)) {
+          $("lock-msg").textContent = "";
+          updateCounter();
+          tick = setInterval(updateCounter, 1000);
+          show("s-count");
+          burstFromCard(40);
+        } else {
+          tries++;
+          $("lock-msg").textContent = tries >= 2 ? "تلميح: يوم من أيام أغسطس الأخيرة، اكتبيه هكذا يوم/شهر" : "ليس هذا التاريخ، حاولي مرة أخرى";
+          const card = $("card");
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+        }
+      });
+
+      /* ---------- quiz ---------- */
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+      function buildQuestions() {
+        return CONFIG.questions.map((q) => {
+          if (q.auto !== "days") return q;
+          const d = since().days;
+          const set = [...new Set([d, d + 7, Math.max(1, d - 10), d + 30, d + 3])].slice(0, 4);
+          const nums = shuffle(set);
+          return { q: q.q, options: nums.map(ar), answer: nums.indexOf(d), yes: ar(d) + " يوماً، وكل يوم منها أجمل من الذي قبله" };
+        });
+      }
+      let QS = [],
+        qi = 0;
+      function renderHearts() {
+        $("hearts").innerHTML = QS.map((_, i) => `<svg viewBox="0 0 24 24" class="${i < qi ? "on" : ""}"><path d="${HEART}"/></svg>`).join("");
+      }
+      function renderQ() {
+        const q = QS[qi];
+        renderHearts();
+        $("q-count").textContent = "السؤال " + ar(qi + 1) + " من " + ar(QS.length);
+        $("q-title").textContent = q.q;
+        $("q-feedback").textContent = "";
+        $("q-next").hidden = true;
+        const box = $("q-options");
+        box.innerHTML = "";
+        q.options.forEach((text, i) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "opt";
+          b.id = "opt-" + qi + "-" + i;
+          b.textContent = text;
+          b.addEventListener("click", () => answer(i, b));
+          box.appendChild(b);
+        });
+      }
+      function answer(i, btn) {
+        const q = QS[qi];
+        log("إجابة", "س" + (qi + 1) + ": " + q.q + " ← " + q.options[i], i === q.answer);
+        if (i === q.answer) {
+          btn.classList.add("right");
+          $("q-options")
+            .querySelectorAll(".opt")
+            .forEach((o) => (o.disabled = true));
+          $("q-feedback").textContent = q.yes || "صحيح";
+          const hs = $("hearts").querySelectorAll("svg");
+          if (hs[qi]) hs[qi].classList.add("on");
+          $("q-next").textContent = qi === QS.length - 1 ? "إلى الرسالة" : "التالي";
+          $("q-next").hidden = false;
+          $("q-next").focus({ preventScroll: true });
+          burstFromEl(btn, 14);
+        } else {
+          btn.classList.add("wrong");
+          btn.disabled = true;
+          $("q-feedback").textContent = q.no || "ليست هذه الإجابة، جربي مرة أخرى";
+          const card = $("card");
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+        }
+      }
+      $("start-quiz").addEventListener("click", () => {
+        log("بدأت الأسئلة");
+        QS = buildQuestions();
+        qi = 0;
+        renderQ();
+        show("s-quiz");
+      });
+      $("q-next").addEventListener("click", () => {
+        qi++;
+        if (qi >= QS.length) show("s-letter");
+        else renderQ();
+      });
+
+      /* ---------- letter ---------- */
+      function fillLetter() {
+        const p = $("paper");
+        p.innerHTML = "";
+        const g = document.createElement("p");
+        g.className = "greet";
+        g.textContent = CONFIG.letterGreeting;
+        p.appendChild(g);
+        CONFIG.letter.forEach((t) => {
+          const el = document.createElement("p");
+          el.textContent = t;
+          p.appendChild(el);
+        });
+        const s = document.createElement("p");
+        s.className = "sign";
+        s.textContent = CONFIG.signature;
+        p.appendChild(s);
+        $("surprise").textContent = CONFIG.surprise;
+      }
+      $("open-letter").addEventListener("click", () => {
+        log("فتحت الرسالة");
+        fillLetter();
+        $("sealed").hidden = true;
+        $("open-letter").hidden = true;
+        $("paper").hidden = false;
+        $("surprise").hidden = !CONFIG.surprise;
+        $("restart").hidden = false;
+        $("foot").hidden = false;
+        burstFromCard(80);
+      });
+      $("restart").addEventListener("click", () => {
+        log("بدأت من جديد");
+        $("sealed").hidden = false;
+        $("open-letter").hidden = false;
+        ["paper", "surprise", "restart", "foot"].forEach((id) => ($(id).hidden = true));
+        $("code").value = "";
+        tries = 0;
+        clearInterval(tick);
+        show("s-lock");
+        window.scrollTo({ top: 0 });
+      });
+
+      /* ---------- sky: stars, drifting hearts, bursts ---------- */
+      const cv = $("sky"),
+        ctx = cv.getContext("2d");
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let W = 0,
+        H = 0;
+      const stars = Array.from({ length: 80 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + 0.3, p: Math.random() * 6.28 }));
+      const newFloater = (init) => ({
+        x: Math.random(),
+        y: init ? Math.random() : 1.08,
+        s: 6 + Math.random() * 10,
+        v: 0.00022 + Math.random() * 0.00035,
+        a: 0.07 + Math.random() * 0.13,
+        w: Math.random() * 6.28,
+      });
+      const floaters = Array.from({ length: 12 }, () => newFloater(true));
+      let parts = [];
+
+      function heart(x, y, s) {
+        ctx.beginPath();
+        ctx.moveTo(x, y + s * 0.3);
+        ctx.bezierCurveTo(x, y, x - s * 0.5, y, x - s * 0.5, y + s * 0.3);
+        ctx.bezierCurveTo(x - s * 0.5, y + s * 0.6, x, y + s * 0.78, x, y + s);
+        ctx.bezierCurveTo(x, y + s * 0.78, x + s * 0.5, y + s * 0.6, x + s * 0.5, y + s * 0.3);
+        ctx.bezierCurveTo(x + s * 0.5, y, x, y, x, y + s * 0.3);
+        ctx.fill();
+      }
+      function size() {
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        W = innerWidth;
+        H = innerHeight;
+        cv.width = W * dpr;
+        cv.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        if (reduce) draw(0);
+      }
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = "#f6eff4";
+        for (const s of stars) {
+          ctx.globalAlpha = reduce ? 0.5 : 0.3 + 0.35 * Math.sin(t / 900 + s.p);
+          ctx.beginPath();
+          ctx.arc(s.x * W, s.y * H, s.r, 0, 6.283);
+          ctx.fill();
+        }
+        for (let i = 0; i < floaters.length; i++) {
+          const f = floaters[i];
+          if (!reduce) {
+            f.y -= f.v * 16;
+            f.w += 0.01;
+            if (f.y < -0.05) floaters[i] = newFloater(false);
+          }
+          ctx.globalAlpha = f.a;
+          ctx.fillStyle = "#f0a3b5";
+          heart(f.x * W + Math.sin(f.w) * 14, f.y * H, f.s);
+        }
+        for (const p of parts) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.22;
+          p.vx *= 0.99;
+          p.life -= 0.011;
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.c;
+          heart(p.x, p.y, p.s);
+        }
+        parts = parts.filter((p) => p.life > 0 && p.y < H + 40);
+        ctx.globalAlpha = 1;
+      }
+      function loop(t) {
+        draw(t);
+        requestAnimationFrame(loop);
+      }
+      function burst(n, cx, cy) {
+        if (reduce) return;
+        for (let i = 0; i < n; i++) {
+          parts.push({
+            x: cx,
+            y: cy,
+            vx: (Math.random() - 0.5) * 9,
+            vy: -Math.random() * 9 - 2,
+            s: 7 + Math.random() * 11,
+            life: 1,
+            c: Math.random() < 0.65 ? "#f0a3b5" : "#e9c98f",
+          });
+        }
+      }
+      function burstFromEl(el, n) {
+        const r = el.getBoundingClientRect();
+        burst(n, r.left + r.width / 2, r.top + r.height / 2);
+      }
+      function burstFromCard(n) {
+        const r = $("card").getBoundingClientRect();
+        burst(n, r.left + r.width / 2, r.top + Math.min(r.height, H) / 3);
+      }
+
+      addEventListener("resize", size);
+      size();
+      if (!reduce) requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
